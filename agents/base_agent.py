@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+from google import genai
 
 
 class BaseAgent:
@@ -7,26 +7,24 @@ class BaseAgent:
         self.name = name
         self.system_prompt = system_prompt
 
-        # Get API key
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             raise RuntimeError("❌ GEMINI_API_KEY not set")
 
-        # Configure Gemini
-        genai.configure(api_key=api_key)
-
-        # Use working model
-        self.model = genai.GenerativeModel("models/gemini-1.5-flash")
+        # ✅ NEW SDK CLIENT
+        self.client = genai.Client(api_key=api_key)
 
     def _chat(self, messages):
         prompt = ""
 
-        # Convert messages into single prompt
         for m in messages:
             prompt += f"{m['role']}: {m['content']}\n"
 
-        # Call Gemini
-        response = self.model.generate_content(prompt)
+        # ✅ NEW WORKING MODEL
+        response = self.client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
 
         return response.text
 
