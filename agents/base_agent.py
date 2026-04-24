@@ -12,7 +12,7 @@ class BaseAgent:
             raise RuntimeError("❌ GEMINI_API_KEY not set")
 
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-pro")
+       self.model = genai.GenerativeModel("gemini-1.5-flash-8b")
 
     def _chat(self, messages):
         prompt = ""
