@@ -3,8 +3,10 @@ import requests
 
 
 class BaseAgent:
+    def __init__(self, name, system_prompt):
+        self.name = name
+        self.system_prompt = system_prompt
 
-    def __init__(self):
         self.api_key = os.getenv("GROQ_API_KEY")
         if not self.api_key:
             raise RuntimeError("❌ GROQ_API_KEY not set")
@@ -36,7 +38,7 @@ class BaseAgent:
 
     def run(self, user_input):
         messages = [
-            {"role": "system", "content": ""},
+            {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": user_input},
         ]
         return self._chat(messages)
