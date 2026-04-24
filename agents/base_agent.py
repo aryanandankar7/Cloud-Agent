@@ -1,33 +1,33 @@
 import os
-import requests
+import google.generativeai as genai
 
 
 class BaseAgent:
     def __init__(self, name, system_prompt):
         self.name = name
         self.system_prompt = system_prompt
-        self.base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
-        self.model = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
+
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise RuntimeError("❌ GEMINI_API_KEY not set")
+
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     def _chat(self, messages):
-        try:
-            res = requests.post(
-                f"{self.base_url}/api/chat",
-                json={
-                    "model": self.model,
-                    "messages": messages,
-                    "stream": False,
-                },
-                timeout=30,
-            )
-            res.raise_for_status()
-            return res.json()["message"]["content"]
-        except Exception:
-            raise RuntimeError("❌ Ollama not running → run: ollama run llama3.2:3b")
+        prompt = ""
+
+        for m in messages:
+            prompt += f"{m['role']}: {m['content']}\n"
+
+        response = self.model.generate_content(prompt)
+
+        return response.text
 
     def run(self, user_input):
         messages = [
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": user_input},
         ]
+
         return self._chat(messages)
