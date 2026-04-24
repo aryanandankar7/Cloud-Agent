@@ -1,32 +1,34 @@
 import os
-from google import genai
+import requests
 
 
 class BaseAgent:
     def __init__(self, name, system_prompt):
         self.name = name
         self.system_prompt = system_prompt
+        self.api_key = os.getenv("GROQ_API_KEY")
 
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise RuntimeError("❌ GEMINI_API_KEY not set")
-
-        # ✅ NEW SDK CLIENT
-        self.client = genai.Client(api_key=api_key)
+        if not self.api_key:
+            raise RuntimeError("❌ GROQ_API_KEY not set")
 
     def _chat(self, messages):
         prompt = ""
-
         for m in messages:
             prompt += f"{m['role']}: {m['content']}\n"
 
-        # ✅ NEW WORKING MODEL
-        response = self.client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "llama3-8b-8192",
+                "messages": [{"role": "user", "content": prompt}],
+            },
         )
 
-        return response.text
+        return response.json()["choices"][0]["message"]["content"]
 
     def run(self, user_input):
         messages = [
