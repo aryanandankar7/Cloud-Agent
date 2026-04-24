@@ -16,7 +16,7 @@ class BaseAgent:
         genai.configure(api_key=api_key)
 
         # Use working model
-        self.model = genai.GenerativeModel("gemini-1.5-flash-8b")
+        self.model = genai.GenerativeModel("models/gemini-1.5-flash")
 
     def _chat(self, messages):
         prompt = ""
